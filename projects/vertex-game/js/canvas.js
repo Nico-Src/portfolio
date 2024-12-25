@@ -205,6 +205,10 @@ class Canvas{
         this.canvas.onmousemove = (e) => this.cursorMove(e);
         this.canvas.addEventListener("mousedown", this.cursorDown.bind(this));
         this.canvas.addEventListener("mouseup", this.cursorUp.bind(this));
+        // touch events
+        this.canvas.addEventListener('touchstart', this.touchStart.bind(this));
+        this.canvas.addEventListener('touchmove', this.touchMove.bind(this));
+        this.canvas.addEventListener('touchend', this.touchEnd.bind(this));
         window.addEventListener('keydown',this.keyDown.bind(this));
         window.addEventListener('keyup',this.keyUp.bind(this));
         this.canvas.addEventListener('mousewheel',this.scroll.bind(this));
@@ -627,6 +631,169 @@ class Canvas{
                 this.vertices[i].hovered = false;
             }
         }
+    }
+    
+    touchStart(e) { // ANCHOR touchStart
+        e.preventDefault();
+        this.cursor.left = true;
+        
+        const touch = e.touches[0];
+        const rect = this.canvas.getBoundingClientRect();
+        // calculate mouse position in canvas
+        this.cursor.x = touch.clientX - rect.left;
+        this.cursor.y = touch.clientY - rect.top;
+        
+        // apply canvas scale
+        this.cursor.x /= (rect.width / this.canvas.width);
+        this.cursor.y /= (rect.height / this.canvas.height);
+        
+        // apply translation (move)
+        this.cursor.x -= this.translation.x;       // ORDER OF THESE 3 OPERATIONS MATTER
+        this.cursor.y -= this.translation.y;
+        
+        // apply scale (zoom)
+        this.cursor.x /= this.scale.x;
+        this.cursor.y /= this.scale.y;
+    
+        // Check if the touch is over a vertex
+        for (let i = 0; i < this.vertices.length; i++) {
+            const dx = this.vertices[i].x - this.cursor.x;
+            const dy = this.vertices[i].y - this.cursor.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+    
+            if (distance < this.vertices[i].vertexSize) {
+                // Set as base vertex for connection if it is the first touch
+                this.baseVertex = this.vertices[i];
+                this.blockTranslation = true;
+                break;
+            }
+        }
+    
+        // If no vertex was touched, allow translation
+        if (!this.baseVertex) {
+            this.blockTranslation = false;
+        }
+    }
+    
+    touchMove(e) { // ANCHOR touchMove
+        e.preventDefault();
+    
+        const touch = e.touches[0];
+        const rect = this.canvas.getBoundingClientRect();
+    
+        // Update cursor position based on the touch
+        const previousCursorX = this.cursor.x;
+        const previousCursorY = this.cursor.y;
+        // calculate mouse position in canvas
+        this.cursor.x = touch.clientX - rect.left;
+        this.cursor.y = touch.clientY - rect.top;
+        
+        // apply canvas scale
+        this.cursor.x /= (rect.width / this.canvas.width);
+        this.cursor.y /= (rect.height / this.canvas.height);
+        
+        // apply translation (move)
+        this.cursor.x -= this.translation.x;       // ORDER OF THESE 3 OPERATIONS MATTER
+        this.cursor.y -= this.translation.y;
+        
+        // apply scale (zoom)
+        this.cursor.x /= this.scale.x;
+        this.cursor.y /= this.scale.y;
+    
+        // Handle translation (pan) if no block is set
+        if (this.cursor.left && !this.blockTranslation) {
+            const movementX = this.cursor.x - previousCursorX;
+            const movementY = this.cursor.y - previousCursorY;
+    
+            this.translation.x += movementX * this.pixelScale;
+            this.translation.y += movementY * this.pixelScale;
+        }
+    
+        // Check if the cursor is over a vertex
+        for (let i = 0; i < this.vertices.length; i++) {
+            const dx = this.vertices[i].x - this.cursor.x;
+            const dy = this.vertices[i].y - this.cursor.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+    
+            if (distance < this.vertices[i].vertexSize) {
+                this.vertices[i].hovered = true;
+            } else {
+                this.vertices[i].hovered = false;
+            }
+        }
+    }
+    
+    touchEnd(e) { // ANCHOR touchEnd
+        e.preventDefault();
+    
+        // Simulate mouse release
+        this.cursor.left = false;
+    
+        // Handle connections if there is a base vertex
+        if (this.baseVertex) {
+            // Determine if touch ended over another vertex
+            for (let i = 0; i < this.vertices.length; i++) {
+                if (this.vertices[i] !== this.baseVertex) {
+                    const dx = this.vertices[i].x - this.cursor.x;
+                    const dy = this.vertices[i].y - this.cursor.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+    
+                    if (distance < this.vertices[i].vertexSize) {
+                        this.connectTo = this.vertices[i];
+                        break;
+                    }
+                }
+            }
+    
+            // Connect vertices or animate failure
+            if (this.connectTo && this.connectTo !== this.baseVertex) {
+                if (this.connectTo.remainingConnections > 0 && this.baseVertex.remainingConnections > 0) {
+                    this.vertexConnections.push({ a: this.baseVertex, b: this.connectTo });
+                    this.baseVertex.remainingConnections--;
+                    this.connectTo.remainingConnections--;
+    
+                    // Update vertex sizes
+                    this.baseVertex.vertexSize = this.baseVertexSize + this.baseVertex.remainingConnections / this.vertexShrinkFactor;
+                    this.connectTo.vertexSize = this.baseVertexSize + this.connectTo.remainingConnections / this.vertexShrinkFactor;
+                } else {
+                    this.animatedLines.push({ start: { x: this.baseVertex.x, y: this.baseVertex.y }, end: { x: this.cursor.x, y: this.cursor.y }, color: 'red' });
+                }
+            } else {
+                this.animatedLines.push({ start: { x: this.baseVertex.x, y: this.baseVertex.y }, end: { x: this.cursor.x, y: this.cursor.y }, color: 'red' });
+            }
+        }
+    
+        // Check if any faces are completed
+        for (let i = 0; i < this.vertexFaces.length; i++) {
+            if (this.vertexFaces[i].show) continue;
+    
+            let allConnected = true;
+            for (let j = 0; j < this.vertexFaces[i].vertices.length; j++) {
+                if (j === this.vertexFaces[i].vertices.length - 1) {
+                    if (!this.vertexConnections.some(c => c.a.id === this.vertexFaces[i].vertices[j] && c.b.id === this.vertexFaces[i].vertices[0])
+                        && !this.vertexConnections.some(c => c.a.id === this.vertexFaces[i].vertices[0] && c.b.id === this.vertexFaces[i].vertices[j])) {
+                        allConnected = false;
+                        break;
+                    }
+                } else {
+                    if (!this.vertexConnections.some(c => c.a.id === this.vertexFaces[i].vertices[j] && c.b.id === this.vertexFaces[i].vertices[j + 1])
+                        && !this.vertexConnections.some(c => c.a.id === this.vertexFaces[i].vertices[j + 1] && c.b.id === this.vertexFaces[i].vertices[j])) {
+                        allConnected = false;
+                        break;
+                    }
+                }
+            }
+    
+            this.vertexFaces[i].show = allConnected;
+        }
+    
+        // Check if the game is finished
+        this.finished = this.vertexFaces.every(f => f.show) && this.vertexFaces.length > 0;
+    
+        // Reset references and unblock translation
+        this.baseVertex = null;
+        this.connectTo = null;
+        this.blockTranslation = false;
     }
     
     keyDown(e){ // ANCHOR keyDown
