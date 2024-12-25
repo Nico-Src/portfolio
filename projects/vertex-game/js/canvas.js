@@ -705,8 +705,8 @@ class Canvas{
             const movementX = this.cursor.x - previousCursorX;
             const movementY = this.cursor.y - previousCursorY;
     
-            this.translation.x += movementX * this.pixelScale;
-            this.translation.y += movementY * this.pixelScale;
+            this.translation.x += movementX * this.pixelScale * this.scale.x;
+            this.translation.y += movementY * this.pixelScale * this.scale.y;
         }
     
         // Check if the cursor is over a vertex
