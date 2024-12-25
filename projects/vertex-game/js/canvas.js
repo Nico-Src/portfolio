@@ -11,6 +11,10 @@ class Canvas{
         this.windowWidth = window.innerWidth;
         this.windowHeight = window.innerHeight;
         this.parent = config.parent;
+
+        this.zoomDefaultBtn = document.querySelector(".zoom-wrapper .display");
+        this.zoomInBtn = document.querySelector(".zoom-wrapper .zoom-in");
+        this.zoomOutBtn = document.querySelector(".zoom-wrapper .zoom-out");
         
         this.buttonMap = {
             0: "left",
@@ -206,6 +210,10 @@ class Canvas{
         this.canvas.addEventListener('mousewheel',this.scroll.bind(this));
         this.canvas.addEventListener('DOMMouseScroll',this.scroll.bind(this));
         this.canvas.addEventListener("contextmenu", e => e.preventDefault());
+
+        this.zoomDefaultBtn.addEventListener('click', this.zoomDefault.bind(this));
+        this.zoomInBtn.addEventListener('click', this.zoomIn.bind(this));
+        this.zoomOutBtn.addEventListener('click', this.zoomOut.bind(this));
         
         window.addEventListener('resize', this.windowResize.bind(this));
         
@@ -648,6 +656,24 @@ class Canvas{
         this.keys.ctrl = false;
         this.keys.alt = false;
     }
+
+    zoomDefault(e){ // ANCHOR zoomDefault
+        this.scale.x = 1;
+        this.scale.y = 1;
+        this.zoomDefaultBtn.innerHTML = `${Math.round(this.scale.x * 100)}%`;
+    }
+
+    zoomIn(e){ // ANCHOR zoomIn
+        this.scale.x *= 1.1;
+        this.scale.y *= 1.1;
+        this.zoomDefaultBtn.innerHTML = `${Math.round(this.scale.x * 100)}%`;
+    }
+
+    zoomOut(e){ // ANCHOR zoomOut
+        this.scale.x *= 0.9;
+        this.scale.y *= 0.9;
+        this.zoomDefaultBtn.innerHTML = `${Math.round(this.scale.x * 100)}%`;
+    }
     
     /** mouse wheel handler for canvas */
     scroll(e){ // ANCHOR scroll
@@ -659,6 +685,12 @@ class Canvas{
         this.scale.y += delta * -0.0005;
         this.scale.y = Math.min(Math.max(.125 / this.pixelScale, this.scale.y), 4 * this.pixelScale);
         
+        this.recalcMouse(e);
+
+        this.zoomDefaultBtn.innerHTML = `${Math.round(this.scale.x * 100)}%`;
+    }
+
+    recalcMouse(e){ // ANCHOR recalcMouse
         // update mouse position
         const rect = e.target.getBoundingClientRect();
         

@@ -64,3 +64,36 @@ body,html{
     margin-right: 30px;
     flex: 1;
 }
+
+.zoom-wrapper{
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    height: 25px;
+    background-color: #303030;
+    color: white;
+    font-family: 'Poppins', sans-serif;
+    border-radius: 4px;
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    overflow: hidden;
+    cursor: pointer;
+
+    .btn{
+        color: white;
+        background-color: #151515;
+        transition: all .2s ease;
+        height: 25px;
+        display:flex;
+        justify-content: center;
+        align-items: center;
+        padding: 0 10px;
+
+        &:hover{
+            background-color: #404040;
+        }
+    }
+}
