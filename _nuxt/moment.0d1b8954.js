@@ -1,4 +1,4 @@
-import{r as Ds,aJ as gs,aK as vs,aL as ps}from"./entry.0937b550.js";import{u as Ys}from"./vue.f36acd1f.4b300957.js";function xi(e,t){const s=Ds({});return gs(()=>{const r=vs(e),{title:a,titleTemplate:n,...i}=r;s.value={title:a,titleTemplate:n,meta:ps(i)}}),Ys(s,t)}//! moment.js
+import{r as Ds,aJ as gs,aK as vs,aL as ps}from"./entry.0d4ff456.js";import{u as Ys}from"./vue.f36acd1f.1079e35e.js";function xi(e,t){const s=Ds({});return gs(()=>{const r=vs(e),{title:a,titleTemplate:n,...i}=r;s.value={title:a,titleTemplate:n,meta:ps(i)}}),Ys(s,t)}//! moment.js
 //! version : 2.29.4
 //! authors : Tim Wood, Iskren Chernev, Moment.js contributors
 //! license : MIT
