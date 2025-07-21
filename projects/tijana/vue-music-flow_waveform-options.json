@@ -1,0 +1,17 @@
+{
+  "height": 50,
+  "waveColor": "#ffffff",
+  "progressColor": "#e093e1",
+  "cursorColor": "#e9a0f3",
+  "cursorWidth": 3,
+  "barWidth": 4,
+  "barGap": 4,
+  "barRadius": 4,
+  "barHeight": 0.8,
+  "minPxPerSec": 0,
+  "autoScroll": false,
+  "autoCenter": false,
+  "hideScrollbar": false,
+  "interact": true,
+  "autoplay": false
+}

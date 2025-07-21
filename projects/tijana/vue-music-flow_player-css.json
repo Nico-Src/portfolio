@@ -1,0 +1,13 @@
+{
+  "--mw-color-mw-primary-dark": "#030712",
+  "--mw-color-mw-primary": "#0f172b",
+  "--mw-color-mw-secondary": "#1e2939",
+  "--mw-color-mw-primary-border": "#1e2939",
+  "--mw-color-mw-primary-hover": "#dc8ee6",
+  "--mw-color-mw-primary-active": "#ea8ef0",
+  "--mw-color-mw-primary-typography": "#fafafa",
+  "--mw-color-mw-secondary-typography": "#a1a1a1",
+  "--scroll-bar-background-light": "#f8fafc",
+  "--scroll-bar-background": "#1d293d",
+  "--scroll-bar-slider": "#eba2e9"
+}
